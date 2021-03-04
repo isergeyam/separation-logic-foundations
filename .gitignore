@@ -1,0 +1,16 @@
+*.vo
+*.vok
+*.vos
+*.aux
+*.glob
+*.html
+.Makefile.d
+.Makefile.coq.d
+.lia.cache
+common/
+README
+README.md
+deps.gif
+deps.map
+*.ml
+*.mli
