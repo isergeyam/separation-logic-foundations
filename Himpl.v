@@ -101,7 +101,9 @@ Lemma himpl_antisym : forall H1 H2,
   (H1 ==> H2) ->
   (H2 ==> H1) ->
   H1 = H2.
-Proof using. (* FILL IN HERE *) Admitted.
+Proof using. 
+  intros. apply predicate_extensionality. intros. split; auto. 
+Qed.
 
 (** [] *)
 
@@ -207,7 +209,10 @@ Parameter himpl_frame_l : forall H2 H1 H1',
 
 Lemma hstar_comm_assoc : forall H1 H2 H3,
   H1 \* H2 \* H3 = H2 \* H1 \* H3.
-Proof using. (* FILL IN HERE *) Admitted.
+Proof using. 
+  intros. rewrite <- hstar_assoc. assert (H: H1 \* H2 = H2 \* H1) by (apply hstar_comm). 
+  rewrite H. rewrite hstar_assoc. reflexivity. 
+Qed.
 
 (** [] *)
 
@@ -221,7 +226,10 @@ Proof using. (* FILL IN HERE *) Admitted.
 Lemma himpl_frame_r : forall H1 H2 H2',
   H2 ==> H2' ->
   (H1 \* H2) ==> (H1 \* H2').
-Proof using. (* FILL IN HERE *) Admitted.
+Proof using. 
+  intros. rewrite hstar_comm. assert (M: H1 \* H2' = H2' \* H1) by (apply hstar_comm). 
+  rewrite M. apply himpl_frame_l. assumption. 
+Qed.
 
 (** [] *)
 
@@ -236,7 +244,10 @@ Lemma himpl_frame_lr : forall H1 H1' H2 H2',
   H1 ==> H1' ->
   H2 ==> H2' ->
   (H1 \* H2) ==> (H1' \* H2').
-Proof using. (* FILL IN HERE *) Admitted.
+Proof using. 
+  intros. eapply himpl_frame_l in H. eapply himpl_frame_r in H0. eapply himpl_trans. 
+  apply H. apply H0. 
+Qed.
 
 (** [] *)
 
@@ -260,7 +271,9 @@ Lemma himpl_hstar_hpure_r : forall P H H',
   P ->
   (H ==> H') ->
   H ==> (\[P] \* H').
-Proof using. (* FILL IN HERE *) Admitted.
+Proof using. 
+  intros. intros h H2. rewrite hstar_hpure_l. split; auto. 
+Qed.
 
 (** [] *)
 
@@ -284,7 +297,10 @@ Proof using. (* FILL IN HERE *) Admitted.
 Lemma himpl_hstar_hpure_l : forall (P:Prop) (H H':hprop),
   (P -> H ==> H') ->
   (\[P] \* H) ==> H'.
-Proof using. (* FILL IN HERE *) Admitted.
+Proof using. 
+  intros. intros h H1. rewrite hstar_hpure_l in H1. destruct H1 as [H1 H2]. 
+  apply H0 in H1. auto. 
+Qed.
 
 (** [] *)
 
@@ -299,7 +315,9 @@ Proof using. (* FILL IN HERE *) Admitted.
 Lemma himpl_hexists_r : forall A (x:A) H J,
   (H ==> J x) ->
   H ==> (\exists x, J x).
-Proof using. (* FILL IN HERE *) Admitted.
+Proof using. 
+  intros. intros h H1. exists x. auto. 
+Qed.
 
 (** [] *)
 
@@ -326,7 +344,9 @@ Proof using. (* FILL IN HERE *) Admitted.
 Lemma himpl_hexists_l : forall (A:Type) (H:hprop) (J:A->hprop),
   (forall x, J x ==> H) ->
   (\exists x, J x) ==> H.
-Proof using. (* FILL IN HERE *) Admitted.
+Proof using. 
+  intros. intros h H1. destruct H1 as [x H1]. apply H0 in H1. auto. 
+Qed.
 
 (** [] *)
 
@@ -362,7 +382,7 @@ Lemma hstar_hsingle_same_loc : forall (p:loc) (v1 v2:val),
     contradiction on the disjointness assumption. *)
 
 Proof using.
-  intros. unfold hsingle. intros h (h1&h2&E1&E2&D&E). false.
+  intros. unfold hsingle. intros h (h1&h2&E1&E2&D&E). false. 
   subst. applys Fmap.disjoint_single_single_same_inv D.
 Qed.
 
@@ -413,7 +433,10 @@ Lemma triple_conseq_frame : forall H2 H1 Q1 t H Q,
 
     Prove the combined consequence-frame rule. *)
 
-Proof using. (* FILL IN HERE *) Admitted.
+Proof using. 
+  intros. eapply triple_conseq. Focus 2. apply H3. Focus 2. apply H4. 
+  apply triple_frame. apply H0. 
+Qed.
 
 (** [] *)
 
@@ -482,7 +505,13 @@ Implicit Types n : int.
 Lemma himpl_example_1 : forall p1 p2 p3 p4,
       p1 ~~> 6 \* p2 ~~> 7 \* p3 ~~> 8 \* p4 ~~> 9
   ==> p4 ~~> 9 \* p3 ~~> 8 \* p2 ~~> 7 \* p1 ~~> 6.
-Proof using. (* FILL IN HERE *) Admitted.
+Proof using. 
+  intros. rewrite hstar_comm. 
+  assert (H: p2 ~~> 7 \* p3 ~~> 8 \* p4 ~~> 9 = p4 ~~> 9 \* p3 ~~> 8 \* p2 ~~> 7).
+  { rewrite hstar_comm. assert (H1: p3 ~~> 8 \* p4 ~~> 9 = p4 ~~> 9 \* p3 ~~> 8). 
+  { apply hstar_comm. } rewrite H1. rewrite hstar_assoc. reflexivity. }
+  rewrite H. rewrite hstar_assoc. rewrite hstar_assoc. apply himpl_refl. 
+Qed.
 
 (** [] *)
 
@@ -492,10 +521,18 @@ Proof using. (* FILL IN HERE *) Admitted.
     Hint: use [himpl_hstar_hpure_r] to extract pure facts, once they
     appear at the head of the left-hand side of the entailment. *)
 
+Check hstar_hpure_l. 
+
 Lemma himpl_example_2 : forall p1 p2 p3 n,
       p1 ~~> 6 \* \[n > 0] \* p2 ~~> 7 \* \[n < 0]
   ==> p3 ~~> 8.
-Proof using. (* FILL IN HERE *) Admitted.
+Proof using. 
+  intros. intros h H. rewrite hstar_comm in H. rewrite hstar_assoc in H. 
+  rewrite hstar_hpure_l in H. rewrite hstar_assoc in H. rewrite hstar_comm in H. 
+  rewrite hstar_assoc in H. destruct H as [H1 H]. rewrite hstar_hpure_l in H. 
+  destruct H as [H2 H]. assert (n > 0 /\ n < 0 -> False) by math. 
+  assert (n > 0 /\ n < 0) by auto. apply H0 in H3. contradiction. 
+Qed.
 
 (** [] *)
 
@@ -509,7 +546,12 @@ Proof using. (* FILL IN HERE *) Admitted.
 Lemma himpl_example_3 : forall p,
       \exists n, p ~~> n \* \[n > 0]
   ==> \exists n, \[n > 1] \* p ~~> (n-1).
-Proof using. (* FILL IN HERE *) Admitted.
+Proof using. 
+  intros. apply himpl_hexists_l. intros. apply (himpl_hexists_r (x + 1)). 
+  rewrite hstar_comm. apply himpl_hstar_hpure_l. intros. 
+  apply himpl_hstar_hpure_r. math. assert (H2: x + 1 - 1 = x) by math. rewrite H2. 
+  apply himpl_refl. 
+Qed.
 
 (** [] *)
 
@@ -557,7 +599,7 @@ Abort.
 Lemma xsimpl_demo_lhs_hpure : forall H1 H2 H3 H4,
   H1 \* H2 \* \[False] \* H3 ==> H4.
 Proof using.
-  intros. xsimpl.
+  intros. xsimpl. 
 Qed.
 
 (** The [xsimpl] tactic also extracts existential quantifier from the LHS.
@@ -593,7 +635,7 @@ Abort.
 Lemma xsimpl_demo_cancel_one : forall H1 H2 H3 H4 H5 H6 H7,
   H1 \* H2 \* H3 \* H4 ==> H5 \* H6 \* H2 \* H7.
 Proof using.
-  intros. xsimpl.
+  intros. xsimpl. 
 Abort.
 
 (** [xsimpl] actually cancels out at once all the heap predicates that it
@@ -603,7 +645,7 @@ Abort.
 Lemma xsimpl_demo_cancel_many : forall H1 H2 H3 H4 H5,
   H1 \* H2 \* H3 \* H4 ==> H4 \* H3 \* H5 \* H2.
 Proof using.
-  intros. xsimpl.
+  intros. xsimpl. 
 Abort.
 
 (** If all the pieces of heap predicate get canceled out, the remaining
@@ -629,7 +671,7 @@ Qed.
 Lemma xsimpl_demo_rhs_hpure : forall H1 H2 H3 (n:int),
   H1 ==> H2 \* \[n > 0] \* H3.
 Proof using.
-  intros. xsimpl.
+  intros. xsimpl. 
 Abort.
 
 (** When it encounters an existential quantifier in the RHS, the [xsimpl]
@@ -640,7 +682,7 @@ Abort.
 Lemma xsimpl_demo_rhs_hexists : forall H1 H2 H3 H4 (p:loc),
   H1 ==> H2 \* \exists (n:int), (p ~~> n \* H3) \* H4.
 Proof using.
-  intros. xsimpl.
+  intros. xsimpl. 
 Abort.
 
 (** The "evar" often gets subsequently instantiated as a result of
@@ -652,7 +694,7 @@ Abort.
 Lemma xsimpl_demo_rhs_hexists_unify : forall H1 H2 H3 H4 (p:loc),
   H1 \* (p ~~> 3) ==> H2 \* \exists (n:int), (p ~~> n \* H3) \* H4.
 Proof using.
-  intros. xsimpl.
+  intros. xsimpl. 
 Abort.
 
 (** The instantiation of the evar [?x] can be observed if there is
@@ -675,7 +717,7 @@ Abort.
 Lemma xsimpl_demo_rhs_hints : forall H1 (p q:loc),
   H1 ==> \exists (n m:int), (p ~~> n \* q ~~> m).
 Proof using.
-  intros. xsimpl 3 4.
+  intros. xsimpl 3 4. 
 Abort.
 
 (** (Advanced.) If two existential quantifiers quantify variables of the same
@@ -688,7 +730,7 @@ Abort.
 Lemma xsimpl_demo_rhs_hints_evar : forall H1 (p q:loc),
   H1 ==> \exists (n m:int), (p ~~> n \* q ~~> m).
 Proof using.
-  intros. xsimpl __ 4.
+  intros. xsimpl __ 4. 
 Abort.
 
 (* ----------------------------------------------------------------- *)
@@ -745,7 +787,7 @@ Lemma xchange_demo_base : forall H1 H2 H2' H3 H4,
   H2 ==> H2' ->
   H1 \* H2 \* H3 ==> H4.
 Proof using.
-  introv M. xchange M.
+  introv M. xchange M. 
   (* Note that freshly produced items appear to the front *)
 Abort.
 
@@ -758,7 +800,7 @@ Lemma xchange_demo_eq : forall H1 H2 H3 H4 H5,
   H1 \* H3 = H5 ->
   H1 \* H2 \* H3 ==> H4.
 Proof using.
-  introv M. xchange M.
+  introv M. xchange M. 
   xchange <- M.
 Abort.
 
@@ -771,7 +813,7 @@ Lemma xchange_demo_inst : forall H1 (J J':int->hprop) H3 H4,
   (forall n, J n = J' (n+1)) ->
   H1 \* J 3 \* H3 ==> H4.
 Proof using.
-  introv M. xchange M.
+  introv M. xchange M. 
   (* Note that freshly produced items appear to the front *)
 Abort.
 
@@ -794,7 +836,10 @@ Lemma xchange_lemma : forall H1 H1' H H' H2,
   H ==> H1 \* H2 ->
   H1' \* H2 ==> H' ->
   H ==> H'.
-Proof using. (* FILL IN HERE *) Admitted.
+Proof using. 
+  introv M1 M2 M3. eapply himpl_frame_l in M1. eapply himpl_trans. apply M2. 
+  eapply himpl_trans. apply M1. apply M3. 
+Qed.
 
 (** [] *)
 
