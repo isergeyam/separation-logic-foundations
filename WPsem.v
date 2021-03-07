@@ -294,7 +294,11 @@ Lemma triple_seq_from_wp_seq : forall t1 t2 H Q H1,
   triple t1 H (fun v => H1) ->
   triple t2 H1 Q ->
   triple (trm_seq t1 t2) H Q.
-Proof using. (* FILL IN HERE *) Admitted.
+Proof using.
+  intros. rewrite <- wp_equiv. applys himpl_trans. Focus 2. applys wp_seq. 
+  rewrite wp_equiv. rewrite <- wp_equiv in H2. applys triple_conseq. 
+  apply H0. xsimpl. xsimpl. apply H2. 
+Qed.
 
 (** [] *)
 
@@ -454,7 +458,13 @@ Definition wp (t:trm) (Q:val->hprop) : hprop :=
 
 Lemma wp_equiv : forall t H Q,
   (H ==> wp t Q) <-> (triple t H Q).
-Proof using. (* FILL IN HERE *) Admitted.
+Proof using. 
+  intros. split. 
+  - intros M. applys triple_conseq. Focus 2. apply M. Focus 2. xsimpl. 
+    applys triple_hexists. intros. rewrite hstar_comm.  applys triple_hpure. 
+    auto. 
+  - intros. unfold wp. xsimpl. assumption. 
+Qed.
 
 (** [] *)
 
@@ -532,7 +542,12 @@ Definition wp (t:trm) (Q:val->hprop) : hprop :=
 
 Lemma wp_equiv_wp_low : forall t H Q,
   (H ==> wp t Q) <-> (triple t H Q).
-Proof using. (* FILL IN HERE *) Admitted.
+Proof using. 
+  intros. split. intros. applys triple_named_heap. intros. 
+  unfolds wp. apply H0 in H1. auto. 
+  intros. unfold wp. intros h M. applys triple_conseq. apply H0. 
+  intros h' M1. subst. apply M. xsimpl. 
+Qed.
 
 (** [] *)
 
@@ -558,7 +573,11 @@ Lemma triple_hexists_in_wp : forall t Q A (J:A->hprop),
   (forall x, (J x ==> wp t Q)) ->
   (\exists x, J x) ==> wp t Q.
 
-Proof using. (* FILL IN HERE *) Admitted.
+Proof using. 
+  intros. rewrite wp_equiv. apply triple_hexists. 
+  intros. lets M: H x. applys triple_conseq. rewrite <- wp_equiv. 
+  xsimpl. apply M. auto. 
+Qed.
 
 (** [] *)
 
@@ -590,7 +609,10 @@ Lemma wp_conseq_frame_trans : forall t H H1 H2 Q1 Q,
   H ==> H1 \* H2 ->
   Q1 \*+ H2 ===> Q ->
   H ==> wp t Q.
-Proof using. (* FILL IN HERE *) Admitted.
+Proof using. 
+  intros. applys wp_conseq_trans. Focus 2. apply H3. Focus 2. apply H4. 
+  applys himpl_trans. applys himpl_frame_l. apply H0. applys wp_frame. 
+Qed.
 
 (** [] *)
 
@@ -610,7 +632,9 @@ Proof using. (* FILL IN HERE *) Admitted.
 Lemma wp_conseq_frame : forall t H Q1 Q2,
   Q1 \*+ H ===> Q2 ->
   (wp t Q1) \* H ==> (wp t Q2).
-Proof using. (* FILL IN HERE *) Admitted.
+Proof using. 
+  intros. applys himpl_trans. applys wp_frame. applys wp_conseq. apply H0. 
+Qed.
 
 (** [] *)
 
@@ -635,7 +659,10 @@ Parameter wp_if : forall b t1 t2 Q,
 
 Lemma wp_if' : forall b t1 t2 Q,
   (if b then (wp t1 Q) else (wp t2 Q)) ==> wp (trm_if b t1 t2) Q.
-Proof using. (* FILL IN HERE *) Admitted.
+Proof using. 
+  intros. applys himpl_trans. Focus 2. applys wp_if. 
+  case_if; auto. 
+Qed.
 
 (** [] *)
 
@@ -780,7 +807,11 @@ Qed.
 
 Lemma wp_let : forall x t1 t2 Q,
   wp t1 (fun v => wp (subst x v t2) Q) ==> wp (trm_let x t1 t2) Q.
-Proof using. (* FILL IN HERE *) Admitted.
+Proof using. 
+  intros. rewrite wp_equiv. applys triple_let.
+  { rewrite* <- wp_equiv. }
+  { intros v. rewrite* <- wp_equiv. }
+Qed.
 
 (** [] *)
 
